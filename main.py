@@ -3,9 +3,9 @@ from turtle import *
 from freegames import path
 
 car = path('car.gif')
-tiles = list(range(32)) * 2
+tiles = list(range(20)) * 2
 state = {'mark': None}
-hide = [True] * 64
+hide = [True] * 40
 revealed_tiles = []  # List to keep track of currently revealed tiles
 
 def square(x, y):
@@ -22,11 +22,11 @@ def square(x, y):
 
 def index(x, y):
     "Convert (x, y) coordinates to tiles index."
-    return int((x + 200) // 50 + ((y + 200) // 50) * 8)
+    return int((x + 200) // 50 + ((y + 150) // 50) * 8)  # Adjust y-offset to fit 5 rows
 
 def xy(count):
     "Convert tiles count to (x, y) coordinates."
-    return (count % 8) * 50 - 200, (count // 8) * 50 - 200
+    return (count % 8) * 50 - 200, (count // 8) * 50 - 150  # Adjust y-offset for 5 rows
 
 def hide_tiles():
     "Hide the two tiles if they don't match."
@@ -62,7 +62,7 @@ def draw():
     shape(car)
     stamp()
 
-    for count in range(64):
+    for count in range(40):  # Iterate only over 40 tiles
         x, y = xy(count)
         if hide[count]:
             square(x, y)  # Draw a hidden square
@@ -76,7 +76,7 @@ def draw():
     ontimer(draw, 100)
 
 shuffle(tiles)
-setup(420, 420, 370, 0)
+setup(420, 370, 370, 0)  # Adjust window height for 5 rows
 addshape(car)
 hideturtle()
 tracer(False)
