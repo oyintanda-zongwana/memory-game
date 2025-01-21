@@ -4,8 +4,8 @@ from freegames import path
 import time  # To track elapsed time
 
 # Images for each level - using car.gif from freegames package for all levels
-car = path('car.gif')  # This is the only image available in freegames
-level_images = [car] * 5  # Use the same image for all levels since it's the only one available
+car = path('car.gif')
+level_images = [car] * 3  # Use the same image for all levels since it's the only one available
 tiles = list(range(10)) * 2  # Start with 10 tiles for level 1
 state = {'mark': None, 'moves': 0, 'level': 1, 'start_time': None, 'time_per_level': [], 'moves_per_level': []}
 hide = []
@@ -15,7 +15,7 @@ leaderboard = []
 
 TILE_SIZE = 50  # Tile size
 TILE_SPACING = 10  # Space between tiles for neatness
-MAX_COLUMNS = 6  # Max number of tiles in a row
+MAX_COLUMNS = 5  # Max number of tiles in a row
 
 def init_game():
     "Initialize game based on the current level."
@@ -95,7 +95,7 @@ def tap(x, y):
                 complete_level()
 
 def complete_level():
-    "Complete the current level and show the image for 2 seconds."
+    "Complete the current level and show the image for 1 seconds."
     global level_completed
     if not level_completed:
         level_completed = True
@@ -103,18 +103,18 @@ def complete_level():
         state['time_per_level'].append(elapsed_time)
         state['moves_per_level'].append(state['moves'])
 
-        if state['level'] == 5:  # If level 5 is completed, show win screen
+        if state['level'] == 3:  # If level 3 is completed, show win screen
             clear()
             goto(0, 0)
             write("You Win!", align="center", font=('Arial', 36, 'bold'))
             show_results()
         else:
-            # Show the image for 2 seconds
+            # Show the image for 1 seconds
             ontimer(show_image, 500)
 
 def next_level():
     "Move to the next level."
-    if state['level'] < 5:  # Ensure levels only go up to 5
+    if state['level'] < 3:  # Ensure levels only go up to 3
         state['level'] += 1  # Increase level
         init_game()  # Initialize the new level
     else:
@@ -129,12 +129,12 @@ def show_image():
     update()
 
     # Move to the next level after showing the image
-    ontimer(next_level, 2000)
+    ontimer(next_level, 1000)
 
 def show_results():
     "Display results after all levels are completed."
     clear()
-    for level in range(1, 6):
+    for level in range(1, 4):  # Changed from range(1, 6) to range(1, 4) for 3 levels
         goto(-300, 150 - 30 * level)
         write(f"Level {level}: Time: {state['time_per_level'][level-1]:.2f}s, Moves: {state['moves_per_level'][level-1]}", font=('Arial', 12, 'normal'))
     ask_for_name()
