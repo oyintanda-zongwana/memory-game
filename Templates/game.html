@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <title>Memory Card Game</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            font-family: 'Press Start 2P', cursive;
+            color: yellow;
+            background: linear-gradient(135deg, #2a0845 0%, #6441A5 100%);
+        }
+
+        .game-container {
+            max-width: 1000px;
+            width: 90%;
+            margin: 20px auto;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 30px;
+            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .game-info {
+            display: flex;
+            gap: 20px;
+            font-size: 1rem;
+        }
+
+        .game-board {
+            display: grid;
+            gap: 15px;
+            padding: 20px;
+            justify-content: center;
+        }
+
+        .memory-card {
+            width: 100px;
+            height: 120px;
+            perspective: 1000px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .card-inner {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s;
+        }
+
+        .memory-card.flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .memory-card.matched .card-inner {
+            transform: rotateY(180deg);
+            cursor: default;
+        }
+
+        .memory-card.matched .card-front {
+            background: #4CAF50;
+            border: 2px solid #ffeb3b;
+            color: white;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2em;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .card-front {
+            background: #ff69b4;
+            transform: rotateY(180deg);
+        }
+
+        .card-back {
+            background: linear-gradient(45deg, #ff69b4, #ff1493);
+        }
+
+        .win-screen {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            color: #2a0845;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .leaderboard {
+            display: none;
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            color: #2a0845;
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            border: 2px solid #ff69b4;
+            border-radius: 5px;
+            margin: 10px;
+            font-family: inherit;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: #ff69b4;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            font-family: inherit;
+        }
+
+        button:hover {
+            background: #ff1493;
+        }
+
+        @media (max-width: 768px) {
+            .game-board {
+                gap: 10px;
+            }
+
+            .memory-card {
+                width: 80px;
+                height: 96px;
+            }
+
+            .game-header {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    {% extends "navbar.html" %}
+
+    {% block content %}
+
+    <div class="game-container">
+        <div class="game-header">
+            <div>LEVEL <span id="current-level">1</span></div>
+            <div class="game-info">
+                <div>MOVES: <span id="move-count">0</span></div>
+                <div>TIME: <span id="time">0.00s</span></div>
+            </div>
+        </div>
+        <div id="game-board" class="game-board"></div>
+    </div>
+
+    <div id="win-screen" class="win-screen">
+        <h2>Congratulations!</h2>
+        <div id="results"></div>
+        <input type="text" id="player-name" placeholder="Enter your name">
+        <button onclick="submitScore()">Submit Score</button>
+    </div>
+
+    <div id="leaderboard" class="leaderboard">
+        <h2>Top Scores</h2>
+        <div id="leaderboard-entries"></div>
+        <button onclick="initGame()">Play Again</button>
+    </div>
+
+    <script>
+        const state = {
+            level: 1,
+            moves: 0,
+            startTime: Date.now(),
+            timePerLevel: [],
+            movesPerLevel: []
+        };
+
+        let tiles = [];
+        let hide = [];
+        let revealedTiles = [];
+        let levelCompleted = false;
+        let leaderboard = [];
+
+        const CARDS_PER_LEVEL = {
+            1: 10,
+            2: 20,
+            3: 30
+        };
+
+        const GRID_COLUMNS = {
+            1: 5,
+            2: 5,
+            3: 6
+        };
+
+        function initGame() {
+            const numCards = CARDS_PER_LEVEL[state.level];
+            const numPairs = numCards / 2;
+            
+            tiles = [];
+            for (let i = 0; i < numPairs; i++) {
+                tiles.push(i);
+                tiles.push(i);
+            }
+            
+            for (let i = tiles.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [tiles[i], tiles[j]] = [tiles[j], tiles[i]];
+            }
+            
+            hide = new Array(numCards).fill(true);
+            revealedTiles = [];
+            levelCompleted = false;
+            state.moves = 0;
+            state.startTime = Date.now();
+            
+            createGameBoard();
+            updateGameBoardSize();
+            updateDisplay();
+
+            document.getElementById('win-screen').style.display = 'none';
+            document.getElementById('leaderboard').style.display = 'none';
+        }
+
+        function createGameBoard() {
+            const gameBoard = document.getElementById('game-board');
+            gameBoard.innerHTML = '';
+            
+            const columns = GRID_COLUMNS[state.level];
+            gameBoard.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
+            
+            for (let i = 0; i < CARDS_PER_LEVEL[state.level]; i++) {
+                const card = document.createElement('div');
+                card.className = 'memory-card';
+                card.dataset.index = i;
+                card.innerHTML = `
+                    <div class="card-inner">
+                        <div class="card-face card-front">${tiles[i]}</div>
+                        <div class="card-face card-back"></div>
+                    </div>
+                `;
+                card.addEventListener('click', () => handleCardClick(i));
+                gameBoard.appendChild(card);
+            }
+        }
+
+        function handleCardClick(index) {
+            const card = document.querySelector(`[data-index="${index}"]`);
+            if (revealedTiles.length === 2 || card.classList.contains('matched') || !hide[index] || levelCompleted) return;
+            
+            flipCard(index);
+            revealedTiles.push(index);
+            state.moves++;
+            updateDisplay();
+            
+            if (revealedTiles.length === 2) {
+                const [tile1, tile2] = revealedTiles;
+                if (tiles[tile1] !== tiles[tile2]) {
+                    setTimeout(() => {
+                        hideCards([tile1, tile2]);
+                        revealedTiles = [];
+                    }, 1000);
+                } else {
+                    markAsMatched([tile1, tile2]);
+                    revealedTiles = [];
+                    checkLevelCompletion();
+                }
+            }
+        }
+
+        function flipCard(index) {
+            const card = document.querySelector(`[data-index="${index}"]`);
+            card.classList.add('flipped');
+            hide[index] = false;
+        }
+
+        function hideCards(indices) {
+            indices.forEach(index => {
+                const card = document.querySelector(`[data-index="${index}"]`);
+                card.classList.remove('flipped');
+                hide[index] = true;
+            });
+        }
+
+        function markAsMatched(indices) {
+            indices.forEach(index => {
+                const card = document.querySelector(`[data-index="${index}"]`);
+                card.classList.add('matched');
+                hide[index] = false;
+            });
+        }
+
+        function updateGameBoardSize() {
+            const gameBoard = document.getElementById('game-board');
+            gameBoard.dataset.level = state.level;
+            
+            const container = document.querySelector('.game-container');
+            container.style.maxWidth = state.level === 3 ? '1200px' : '1000px';
+        }
+
+        function checkLevelCompletion() {
+            if (hide.every(h => !h)) {
+                levelCompleted = true;
+                const elapsedTime = (Date.now() - state.startTime) / 1000;
+                state.timePerLevel.push(elapsedTime);
+                state.movesPerLevel.push(state.moves);
+                
+                if (state.level === 3) {
+                    setTimeout(showWinScreen, 1000);
+                } else {
+                    setTimeout(() => {
+                        state.level++;
+                        initGame();
+                    }, 1000);
+                }
+            }
+        }
+
+        function updateDisplay() {
+            document.getElementById('current-level').textContent = state.level;
+            document.getElementById('move-count').textContent = state.moves;
+            const elapsedTime = (Date.now() - state.startTime) / 1000;
+            document.getElementById('time').textContent = `${elapsedTime.toFixed(2)}s`;
+            
+            if (!levelCompleted) {
+                requestAnimationFrame(updateDisplay);
+            }
+        }
+
+        function showWinScreen() {
+            const winScreen = document.getElementById('win-screen');
+            const results = document.getElementById('results');
+            results.innerHTML = '';
+            
+            for (let i = 0; i < state.timePerLevel.length; i++) {
+                results.innerHTML += `
+                    <p>Level ${i + 1}: Time: ${state.timePerLevel[i].toFixed(2)}s, 
+                       Moves: ${state.movesPerLevel[i]}</p>
+                `;
+            }
+            
+            winScreen.style.display = 'block';
+        }
+
+        function submitScore() {
+            const playerName = document.getElementById('player-name').value;
+            if (!playerName) return;
+            
+            const totalTime = state.timePerLevel.reduce((a, b) => a + b, 0);
+            const totalMoves = state.movesPerLevel.reduce((a, b) => a + b, 0);
+            
+            leaderboard.push({
+                name: playerName,
+                time: totalTime,
+                moves: totalMoves
+            });
+            
+            leaderboard.sort((a, b) => a.time - b.time);
+            displayLeaderboard();
+        }
+
+        function displayLeaderboard() {
+            const winScreen = document.getElementById('win-screen');
+            const leaderboardDiv = document.getElementById('leaderboard');
+            const entries = document.getElementById('leaderboard-entries');
+            
+            winScreen.style.display = 'none';
+            leaderboardDiv.style.display = 'block';
+            
+            entries.innerHTML = leaderboard
+                .slice(0, 5)
+                .map((entry, index) => `
+                    <div class="leaderboard-entry">
+                        <span>${index + 1}. ${entry.name}</span>
+                        <span>Time: ${entry.time.toFixed(2)}s, Moves: ${entry.moves}</span>
+                    </div>
+                `)
+                .join('');
+        }
+
+        window.addEventListener('load', initGame);
+    </script>
+    {% endblock %}
+</body>
+</html>

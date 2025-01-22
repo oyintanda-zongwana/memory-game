@@ -84,6 +84,9 @@
   </style>
 </head>
 <body>
+  {% extends "navbar.html" %}
+
+  {% block content %}
   <div class="game-container">
     <div class="header">
       <div class="level">LEVEL 1</div>
@@ -172,5 +175,6 @@
       <!-- Add more cards as needed -->
     </div>
   </div>
+  {% endblock %}
 </body>
 </html>
