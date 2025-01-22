@@ -1,150 +1,176 @@
-<!DOCTYPE html>
+\<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Memory Game</title>
-    <link rel="stylesheet" href="../static/CSS/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+
+  <title>Card Match Game</title>
+  <style>
+    /* General Styling */
+    body {
+      margin: 0;
+      font-family: 'Press Start 2P', cursive;
+      color: yellow;
+      background: url('https://kiara-adams.github.io/images/Steam%20Workshop__Aesthetic%20Pixel%20City.gif') no-repeat center center fixed;
+      background-size: 100%; /* Zoomed-out effect */
+      overflow: hidden;
+    }
+
+    .game-container {
+      text-align: center;
+      padding: 20px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 30px;
+    }
+
+    .level, .stats .moves, .stats .time {
+      font-size: 1.2rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, 100px); /* Adjust number of columns */
+      grid-gap: 15px;
+      justify-content: center;
+      margin-top: 30px;
+    }
+
+    /* Card Container */
+    .card {
+      width: 100px;
+      height: 120px;
+      perspective: 1000px; /* Perspective for 3D effect */
+    }
+
+    /* Inner Card */
+    .card-inner {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.6s;
+    }
+
+    /* Flipping the Card */
+    .card:hover .card-inner {
+      transform: rotateY(180deg);
+    }
+
+    /* Card Sides */
+    .card-front, .card-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden; /* Hides the back side when not flipped */
+      border-radius: 8px;
+      background-size: cover;
+      background-position: center;
+    }
+
+    .card-front {
+      background-color: #fff; /* Optional background color */
+    }
+
+    .card-back {
+      background-color: #8f0f4d; /* Default background for the back */
+      transform: rotateY(180deg); /* Flipped side */
+    }
+  </style>
 </head>
 <body>
-
-    <style>
-        .memory-card {
-            aspect-ratio: 1;
-            perspective: 1000px;
-            cursor: pointer;
-            position: relative;
-            transform-style: preserve-3d;
-            transition: transform 0.6s;
-        }
-        
-        .memory-card.flipped {
-            transform: rotateY(180deg);
-        }
-        
-        .card-face {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            backface-visibility: hidden;
-            border-radius: 15px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 2rem;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        }
-        
-        .card-front {
-            background: linear-gradient(135deg, #FF69B4, #FF1493);
-            transform: rotateY(180deg);
-            color: white;
-        }
-        
-        .card-back {
-            background: linear-gradient(135deg, #FF69B4, #FF1493);
-            font-size: 3rem;
-            color: rgba(255, 255, 255, 0.8);
-        }
-        
-        .card-back::after {
-            content: "?";
-        }
-        
-        .card-symbol {
-            width: 60%;
-            height: 60%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            padding: 10px;
-        }
-        
-        /* Demo container for display */
-        .demo-container {
-            width: 150px;
-            height: 150px;
-            margin: 20px;
-        }
-        
-        /* Animation when matched */
-        @keyframes matched {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
-        }
-        
-        .memory-card.matched .card-front {
-            animation: matched 0.6s ease-in-out;
-            background: linear-gradient(135deg, #4CAF50, #45a049);
-        }
-        
-        @media (max-width: 768px) {
-            .game-board {
-                gap: 10px;
-                padding: 10px;
-            }
-            
-            .card-face {
-                font-size: 1.5rem;
-            }
-        }
-        
-        /* Level-specific grid adjustments */
-        [data-level="1"] .game-board {
-            grid-template-columns: repeat(5, 1fr);
-        }
-        
-        [data-level="2"] .game-board {
-            grid-template-columns: repeat(5, 1fr);
-        }
-        
-        [data-level="3"] .game-board {
-            grid-template-columns: repeat(6, 1fr);
-            max-width: 900px;
-        }
-        </style>
-        
-        <!-- Game Board -->
-        <div class="game-container">
-            <div class="game-info">
-                <span>Level: <span id="current-level">1</span></span>
-                <span>Moves: <span id="move-count">0</span></span>
-                <span>Time: <span id="time">0.00s</span></span>
-            </div>
-            
-            <div class="game-board" id="game-board">
-                <div class="demo-container">
-                    <div class="memory-card" onclick="this.classList.toggle('flipped')">
-                        <div class="card-face card-back"></div>
-                        <div class="card-face card-front">
-                            <div class="card-symbol">1</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Win Screen -->
-        <div class="win-screen" id="win-screen" style="display: none;">
-            <h1>You Win!</h1>
-            <div class="results" id="results"></div>
-            <div class="leaderboard-input">
-                <input type="text" id="player-name" placeholder="Enter your name">
-                <button onclick="submitScore()">Submit Score</button>
-            </div>
-        </div>
-
-        <!-- Leaderboard -->
-        <div class="leaderboard" id="leaderboard" style="display: none;">
-            <h2>Leaderboard</h2>
-            <div class="leaderboard-entries" id="leaderboard-entries">
-                <!-- Leaderboard entries will be dynamically inserted here -->
-            </div>
-        </div>
+  <div class="game-container">
+    <div class="header">
+      <div class="level">LEVEL 1</div>
+      <div class="stats">
+        <div class="moves">MOVE COUNT: <span id="moveCount">30</span></div>
+        <div class="time">TIME: <span id="time">01:39</span></div>
+      </div>
     </div>
-    <script src="../static/js/game.js"></script>
+    <div class="grid">
+      <!-- Card 1 -->
+      <div class="card">
+        <div class="card-inner">
+          <div class="card-front" style="background-image: url('./Retro\ Gaming\ Arcade\ Birthday\ Invitation\ Templates.jpg');"></div>
+          <div class="card-back" style="background-image: url('./d2a0e55f-8ba9-4d9f-91b7-b448cd0200a7.jpg');"></div>
+        </div>
+      </div>
+      <!-- Card 2 -->
+      <div class="card">
+        <div class="card-inner">
+          <div class="card-front" style="background-image: url('./Screenshot\ 2025-01-20\ 133506.png');"></div>
+          <div class="card-back" style="background-image: url('images/card2-back.jpg');"></div>
+        </div>
+      </div>
+      <!-- Card 3 -->
+      <div class="card">
+        <div class="card-inner">
+          <div class="card-front" style="background-image: url('./Screenshot\ 2025-01-20\ 133506.png');"></div>
+          <div class="card-back" style="background-image: url('images/card3-back.jpg');"></div>
+        </div>
+      </div>
+      <!-- Card 4 -->
+      <div class="card">
+        <div class="card-inner">
+          <div class="card-front" style="background-image: url('./Screenshot\ 2025-01-20\ 133506.png"></div>
+          <div class="card-back" style="background-image: url('images/card4-back.jpg');"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-inner">
+          <div class="card-front" style="background-image: url('./Screenshot\ 2025-01-20\ 133506.png');"></div>
+          <div class="card-back" style="background-image: url('images/card4-back.jpg');"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-inner">
+          <div class="card-front" style="background-image: url('./Screenshot\ 2025-01-20\ 133506.png');"></div>
+          <div class="card-back" style="background-image: url('images/card4-back.jpg');"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-inner">
+          <div class="card-front" style="background-image: url('./Screenshot\ 2025-01-20\ 133506.png');"></div>
+          <div class="card-back" style="background-image: url('images/card4-back.jpg');"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-inner">
+          <div class="card-front" style="background-image: url('./Screenshot\ 2025-01-20\ 133506.png');"></div>
+          <div class="card-back" style="background-image: url('images/card4-back.jpg');"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-inner">
+          <div class="card-front" style="background-image: url('/Screenshot\ 2025-01-20\ 133506.png');"></div>
+          <div class="card-back" style="background-image: url('images/card4-back.jpg');"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-inner">
+          <div class="card-front" style="background-image: url('./Screenshot\ 2025-01-20\ 133506.png');"></div>
+          <div class="card-back" style="background-image: url('images/card4-back.jpg');"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-inner">
+          <div class="card-front" style="background-image: url('./Screenshot\ 2025-01-20\ 133506.png');"></div>
+          <div class="card-back" style="background-image: url('images/card4-back.jpg');"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-inner">
+          <div class="card-front" style="background-image: url('./Screenshot\ 2025-01-20\ 133506.png');"></div>
+          <div class="card-back" style="background-image: url('images/card4-back.jpg');"></div>
+        </div>
+      </div>
+      <!-- Add more cards as needed -->
+    </div>
+  </div>
 </body>
 </html>
