@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Game</title>
+    <link rel="stylesheet" href="../static/CSS/style.css">
+</head>
+<body>
+
+    <style>
+        .memory-card {
+            aspect-ratio: 1;
+            perspective: 1000px;
+            cursor: pointer;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s;
+        }
+        
+        .memory-card.flipped {
+            transform: rotateY(180deg);
+        }
+        
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .card-front {
+            background: linear-gradient(135deg, #FF69B4, #FF1493);
+            transform: rotateY(180deg);
+            color: white;
+        }
+        
+        .card-back {
+            background: linear-gradient(135deg, #FF69B4, #FF1493);
+            font-size: 3rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .card-back::after {
+            content: "?";
+        }
+        
+        .card-symbol {
+            width: 60%;
+            height: 60%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 10px;
+        }
+        
+        /* Demo container for display */
+        .demo-container {
+            width: 150px;
+            height: 150px;
+            margin: 20px;
+        }
+        
+        /* Animation when matched */
+        @keyframes matched {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .memory-card.matched .card-front {
+            animation: matched 0.6s ease-in-out;
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+        }
+        
+        @media (max-width: 768px) {
+            .game-board {
+                gap: 10px;
+                padding: 10px;
+            }
+            
+            .card-face {
+                font-size: 1.5rem;
+            }
+        }
+        
+        /* Level-specific grid adjustments */
+        [data-level="1"] .game-board {
+            grid-template-columns: repeat(5, 1fr);
+        }
+        
+        [data-level="2"] .game-board {
+            grid-template-columns: repeat(5, 1fr);
+        }
+        
+        [data-level="3"] .game-board {
+            grid-template-columns: repeat(6, 1fr);
+            max-width: 900px;
+        }
+        </style>
+        
+        <!-- Game Board -->
+        <div class="game-container">
+            <div class="game-info">
+                <span>Level: <span id="current-level">1</span></span>
+                <span>Moves: <span id="move-count">0</span></span>
+                <span>Time: <span id="time">0.00s</span></span>
+            </div>
+            
+            <div class="game-board" id="game-board">
+                <div class="demo-container">
+                    <div class="memory-card" onclick="this.classList.toggle('flipped')">
+                        <div class="card-face card-back"></div>
+                        <div class="card-face card-front">
+                            <div class="card-symbol">1</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Win Screen -->
+        <div class="win-screen" id="win-screen" style="display: none;">
+            <h1>You Win!</h1>
+            <div class="results" id="results"></div>
+            <div class="leaderboard-input">
+                <input type="text" id="player-name" placeholder="Enter your name">
+                <button onclick="submitScore()">Submit Score</button>
+            </div>
+        </div>
+
+        <!-- Leaderboard -->
+        <div class="leaderboard" id="leaderboard" style="display: none;">
+            <h2>Leaderboard</h2>
+            <div class="leaderboard-entries" id="leaderboard-entries">
+                <!-- Leaderboard entries will be dynamically inserted here -->
+            </div>
+        </div>
+    </div>
+    <script src="../static/js/game.js"></script>
+</body>
+</html>
