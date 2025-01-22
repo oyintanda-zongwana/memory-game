@@ -2,12 +2,6 @@ from random import shuffle
 from turtle import *
 from freegames import path
 import time  # To track elapsed time
-from flask import Flask, render_template
-
-app = Flask(__name__)
-@app.route('/')
-def home():
-    return render_template("index.html")
 
 # Images for each level - using car.gif from freegames package for all levels
 car = path('car.gif')
