@@ -370,40 +370,45 @@
             winScreen.style.display = 'block';
         }
 
+        // JavaScript code
         function submitScore() {
             const playerName = document.getElementById('player-name').value;
             if (!playerName) return;
-            
+
             const totalTime = state.timePerLevel.reduce((a, b) => a + b, 0);
             const totalMoves = state.movesPerLevel.reduce((a, b) => a + b, 0);
-            
-            leaderboard.push({
-                name: playerName,
-                time: totalTime,
-                moves: totalMoves
+
+            fetch('/submit_score', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: `username=${playerName}&score=${totalTime.toFixed(2)},${totalMoves}`
+            })
+            .then(() => {
+                document.getElementById('win-screen').style.display = 'none';
+                displayLeaderboard();
             });
-            
-            leaderboard.sort((a, b) => a.time - b.time);
-            displayLeaderboard();
         }
 
         function displayLeaderboard() {
-            const winScreen = document.getElementById('win-screen');
             const leaderboardDiv = document.getElementById('leaderboard');
             const entries = document.getElementById('leaderboard-entries');
-            
-            winScreen.style.display = 'none';
+
             leaderboardDiv.style.display = 'block';
-            
-            entries.innerHTML = leaderboard
-                .slice(0, 5)
-                .map((entry, index) => `
-                    <div class="leaderboard-entry">
-                        <span>${index + 1}. ${entry.name}</span>
-                        <span>Time: ${entry.time.toFixed(2)}s, Moves: ${entry.moves}</span>
-                    </div>
-                `)
-                .join('');
+
+            fetch('/leaderboard')
+                .then(response => response.json())
+                .then(data => {
+                    entries.innerHTML = data.top_players
+                        .map((player, index) => `
+                            <div class="leaderboard-entry">
+                                <span>${index + 1}. ${player[0]}</span>
+                                <span>Time: ${player[1]}s, Moves: ${player[2]}</span>
+                            </div>
+                        `)
+                        .join('');
+                });
         }
 
         window.addEventListener('load', initGame);
