@@ -1,8 +1,10 @@
 # app.py
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, jsonify
+from flask_cors import CORS
 from database_handler import LeaderboardDB
 
 app = Flask(__name__)
+CORS(app)
 leaderboard_db = LeaderboardDB()
 
 @app.route('/')
@@ -20,11 +22,19 @@ def leaderboard():
 
 @app.route('/submit_score', methods=['POST'])
 def submit_score():
-    username = request.form['username']
-    score = float(request.form['score'].split(',')[0])
-    moves = int(request.form['score'].split(',')[1])
-    leaderboard_db.add_score(username, score, moves)
-    return redirect(url_for('leaderboard'))
+    try:
+        data = request.get_json()
+        print("Received data:", data)  # Add this debug line
+        username = data['username']
+        score = data['score'].split(',')
+        total_time = float(score[0])
+        total_moves = int(score[1])
+        leaderboard_db.add_score(username, total_time, total_moves)
+        return jsonify({"status": "success"}), 200
+    except Exception as e:
+        print(f"Error in submit_score: {e}")
+        return jsonify({"error": str(e)}), 500
+
 
 if __name__ == '__main__':
     app.run(debug=True)

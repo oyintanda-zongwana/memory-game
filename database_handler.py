@@ -1,5 +1,4 @@
 import sqlite3
-import os
 
 class LeaderboardDB:
     def __init__(self, db_path='leaderboard.db'):
@@ -7,35 +6,36 @@ class LeaderboardDB:
         self.init_database()
 
     def init_database(self):
-        """Initialize the database with players table if not exists."""
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
+            # Ensure the table is created if it does not already exist
             cursor.execute('''
                 CREATE TABLE IF NOT EXISTS players (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     username TEXT NOT NULL,
-                    score INTEGER NOT NULL,
+                    total_time REAL NOT NULL,
+                    total_moves INTEGER NOT NULL,
                     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
                 )
             ''')
             conn.commit()
 
-    def add_score(self, username, score):
-        """Add a new score to the leaderboard."""
+    def add_score(self, username, total_time, total_moves):
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
-            cursor.execute('INSERT INTO players (username, score) VALUES (?, ?)', 
-                           (username, score))
+            cursor.execute(
+                'INSERT INTO players (username, total_time, total_moves) VALUES (?, ?, ?)',
+                (username, total_time, total_moves)
+            )
             conn.commit()
 
     def get_top_players(self, limit=10):
-        """Retrieve top players sorted by score."""
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
             cursor.execute('''
-                SELECT username, score, timestamp 
+                SELECT username, total_time, total_moves, timestamp
                 FROM players 
-                ORDER BY score DESC 
+                ORDER BY total_time ASC, total_moves ASC 
                 LIMIT ?
             ''', (limit,))
             return cursor.fetchall()

@@ -47,21 +47,23 @@
                 <tr>
                     <th>Rank</th>
                     <th>Username</th>
-                    <th>Score</th>
+                    <th>Time</th>
+                    <th>Moves</th>
                     <th>Date</th>
                 </tr>
             </thead>
             <tbody>
-                {% for username, score, timestamp in top_players %}
+                {% for username, total_time, total_moves, timestamp in top_players %}
                 <tr>
                     <td>{{ loop.index }}</td>
                     <td>{{ username }}</td>
-                    <td>{{ score }}</td>
+                    <td>{{ total_time }}s</td>
+                    <td>{{ total_moves }}</td>
                     <td>{{ timestamp }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
-        </table>
+         </table>
     </div>
     {% endblock %}
 </body>

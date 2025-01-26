@@ -370,24 +370,36 @@
             winScreen.style.display = 'block';
         }
 
-        // JavaScript code
         function submitScore() {
-            const playerName = document.getElementById('player-name').value;
-            if (!playerName) return;
-
+            const playerName = document.getElementById('player-name').value.trim();
+            if (!playerName) {
+                alert('Please enter a player name');
+                return;
+            }
+        
             const totalTime = state.timePerLevel.reduce((a, b) => a + b, 0);
             const totalMoves = state.movesPerLevel.reduce((a, b) => a + b, 0);
-
+        
             fetch('/submit_score', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
+                    'Content-Type': 'application/json'
                 },
-                body: `username=${playerName}&score=${totalTime.toFixed(2)},${totalMoves}`
+                body: JSON.stringify({
+                    username: playerName,
+                    score: `${parseFloat(totalTime.toFixed(2))},${totalMoves}`
+                })
             })
-            .then(() => {
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Score submission failed');
+                }
                 document.getElementById('win-screen').style.display = 'none';
                 displayLeaderboard();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to submit score. Please try again.');
             });
         }
 
