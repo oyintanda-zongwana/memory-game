@@ -11,9 +11,17 @@ leaderboard_db = LeaderboardDB()
 def home():
     return render_template('index.html')
 
-@app.route('/level')
+@app.route('/games')
 def level():
-    return render_template('game.html')
+    return render_template('game-index.html')
+
+@app.route('/level')
+def game_no():
+    return render_template('game-no.html')
+
+@app.route('/card-match')
+def card_match():
+    return render_template('game-pic.html')
 
 @app.route('/leaderboard')
 def leaderboard():

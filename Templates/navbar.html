@@ -77,7 +77,7 @@
             <a href="/" class="nav-brand">Game Website</a>
             <div class="nav-links">
                 <a href="/" {% if request.endpoint == 'home' %}class="active"{% endif %}>Home</a>
-                <a href="/level" {% if request.endpoint == 'level' %}class="active"{% endif %}>Play Game</a>
+                <a href="/games" {% if request.endpoint == 'level' %}class="active"{% endif %}>Play Game</a>
                 <a href="/leaderboard" {% if request.endpoint == 'leaderboard' %}class="active"{% endif %}>Leaderboard</a>
             </div>
         </div>

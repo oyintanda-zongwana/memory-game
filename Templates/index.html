@@ -1,178 +1,138 @@
-\<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Brain Hurts Game</title>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-
-  <title>Card Match Game</title>
+  <link rel="stylesheet" href="styles.css">
   <style>
-    /* General Styling */
+    /* Global styles */
     body {
       margin: 0;
-      font-family: 'Press Start 2P', cursive;
-      color: yellow;
-      background: url('https://kiara-adams.github.io/images/Steam%20Workshop__Aesthetic%20Pixel%20City.gif') no-repeat center center fixed;
-      background-size: 100%; /* Zoomed-out effect */
+      font-family: 'Press Start 2P', cursive; /* Arcade-style font */
+      background: url('https://kiara-adams.github.io/memory-match-images/download%20(3).gif') no-repeat center center fixed;
+      background-size: cover; /* Fully covers the screen */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
       overflow: hidden;
+      color: #07002E;
     }
-
     .game-container {
       text-align: center;
-      padding: 20px;
+      padding: 10px;
+      max-width: 90%;
+      margin: auto;
     }
-
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px 30px;
+    .game-title h1 {
+      font-size: 2rem;
+      margin: 10px 0 5px;
+      text-shadow: 2px 2px 5px #FFFB00;
     }
-
-    .level, .stats .moves, .stats .time {
-      font-size: 1.2rem;
+    .game-title p {
+      font-size: 1rem;
+      margin: 0;
+      text-shadow: 1px 1px 3px #000;
+      padding-bottom: 20px;
     }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(4, 100px); /* Adjust number of columns */
-      grid-gap: 15px;
-      justify-content: center;
-      margin-top: 30px;
+    .name-input {
+      width: 80%;
+      padding: 10px;
+      border: 2px solid #FBFF00;
+      border-radius: 5px;
+      font-size: 0.9rem;
+      background: rgba(255, 255, 255, 0.8);
+      color: #000;
     }
-
-    /* Card Container */
-    .card {
-      width: 100px;
-      height: 120px;
-      perspective: 1000px; /* Perspective for 3D effect */
-    }
-
-    /* Inner Card */
-    .card-inner {
-      width: 100%;
-      height: 100%;
-      position: relative;
-      transform-style: preserve-3d;
-      transition: transform 0.6s;
-    }
-
-    /* Flipping the Card */
-    .card:hover .card-inner {
-      transform: rotateY(180deg);
-    }
-
-    /* Card Sides */
-    .card-front, .card-back {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      backface-visibility: hidden; /* Hides the back side when not flipped */
-      border-radius: 8px;
+    .play-button button {
+      background: url('https://kiara-adams.github.io/memory-match-images/download%20(3).gif') no-repeat center;
       background-size: cover;
-      background-position: center;
+      border: none;
+      padding: 15px;
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+      transition: transform 0.2s ease;
     }
-
-    .card-front {
-      background-color: #fff; /* Optional background color */
+    .play-button button:hover {
+      transform: scale(1.1);
     }
-
-    .card-back {
-      background-color: #8f0f4d; /* Default background for the back */
-      transform: rotateY(180deg); /* Flipped side */
+    .play-button img {
+      width: 40px;
+    }
+    .logo {
+      width: 400px;
+      margin-bottom: 10px;
+    }
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      body {
+        background-size: cover; /* Adjust background for smaller devices */
+      }
+      .game-title h1 {
+        font-size: 1.5rem;
+      }
+      .game-title p {
+        font-size: 0.9rem;
+      }
+      .name-input {
+        font-size: 0.8rem;
+        width: 90%;
+      }
+      .play-button img {
+        width: 30px;
+      }
+      .play-button button {
+        padding: 10px;
+      }
+      .logo {
+        width: 300px;
+      }
+    }
+    @media (max-width: 480px) {
+      .game-title h1 {
+        font-size: 1.2rem;
+      }
+      .game-title p {
+        font-size: 0.8rem;
+      }
+      .name-input {
+        font-size: 0.7rem;
+      }
+      .play-button img {
+        width: 25px;
+      }
+      .play-button button {
+        padding: 8px;
+      }
+      .logo {
+        width: 50px;
+      }
     }
   </style>
 </head>
 <body>
+
   {% extends "navbar.html" %}
 
   {% block content %}
   <div class="game-container">
-    <div class="header">
-      <div class="level">LEVEL 1</div>
-      <div class="stats">
-        <div class="moves">MOVE COUNT: <span id="moveCount">30</span></div>
-        <div class="time">TIME: <span id="time">01:39</span></div>
-      </div>
+    <div class="game-title">
+      <img src="https://kiara-adams.github.io/memory-match-images/Screenshot_2025-01-28_144743-removebg-preview.png" alt="Brain Icon" class="logo">
+      <h1>MY BRAIN HURTS</h1>
+      <p>MEMORY CARD GAME</p>
     </div>
-    <div class="grid">
-      <!-- Card 1 -->
-      <div class="card">
-        <div class="card-inner">
-          <div class="card-front" style="background-image: url('./Retro\ Gaming\ Arcade\ Birthday\ Invitation\ Templates.jpg');"></div>
-          <div class="card-back" style="background-image: url('./d2a0e55f-8ba9-4d9f-91b7-b448cd0200a7.jpg');"></div>
-        </div>
-      </div>
-      <!-- Card 2 -->
-      <div class="card">
-        <div class="card-inner">
-          <div class="card-front" style="background-image: url('./Screenshot\ 2025-01-20\ 133506.png');"></div>
-          <div class="card-back" style="background-image: url('images/card2-back.jpg');"></div>
-        </div>
-      </div>
-      <!-- Card 3 -->
-      <div class="card">
-        <div class="card-inner">
-          <div class="card-front" style="background-image: url('./Screenshot\ 2025-01-20\ 133506.png');"></div>
-          <div class="card-back" style="background-image: url('images/card3-back.jpg');"></div>
-        </div>
-      </div>
-      <!-- Card 4 -->
-      <div class="card">
-        <div class="card-inner">
-          <div class="card-front" style="background-image: url('./Screenshot\ 2025-01-20\ 133506.png"></div>
-          <div class="card-back" style="background-image: url('images/card4-back.jpg');"></div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-inner">
-          <div class="card-front" style="background-image: url('./Screenshot\ 2025-01-20\ 133506.png');"></div>
-          <div class="card-back" style="background-image: url('images/card4-back.jpg');"></div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-inner">
-          <div class="card-front" style="background-image: url('./Screenshot\ 2025-01-20\ 133506.png');"></div>
-          <div class="card-back" style="background-image: url('images/card4-back.jpg');"></div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-inner">
-          <div class="card-front" style="background-image: url('./Screenshot\ 2025-01-20\ 133506.png');"></div>
-          <div class="card-back" style="background-image: url('images/card4-back.jpg');"></div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-inner">
-          <div class="card-front" style="background-image: url('./Screenshot\ 2025-01-20\ 133506.png');"></div>
-          <div class="card-back" style="background-image: url('images/card4-back.jpg');"></div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-inner">
-          <div class="card-front" style="background-image: url('/Screenshot\ 2025-01-20\ 133506.png');"></div>
-          <div class="card-back" style="background-image: url('images/card4-back.jpg');"></div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-inner">
-          <div class="card-front" style="background-image: url('./Screenshot\ 2025-01-20\ 133506.png');"></div>
-          <div class="card-back" style="background-image: url('images/card4-back.jpg');"></div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-inner">
-          <div class="card-front" style="background-image: url('./Screenshot\ 2025-01-20\ 133506.png');"></div>
-          <div class="card-back" style="background-image: url('images/card4-back.jpg');"></div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-inner">
-          <div class="card-front" style="background-image: url('./Screenshot\ 2025-01-20\ 133506.png');"></div>
-          <div class="card-back" style="background-image: url('images/card4-back.jpg');"></div>
-        </div>
-      </div>
-      <!-- Add more cards as needed -->
+    <div class="input-container">
+      <input type="text" placeholder="Enter your name" class="name-input">
+    </div>
+    <div class="play-button">
+      <a href="games">
+      <button>
+        <img src="./f7910c8a-0fdc-4d04-adf9-c1407753c06d-tYqvm2dkD-transformed.jpeg" alt="Play Icon">
+      </button>
+    </a>
     </div>
   </div>
   {% endblock %}
