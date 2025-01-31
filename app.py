@@ -44,9 +44,13 @@ def leaderboard():
                          top_players=top_players,
                          picture_top_players=picture_top_players)
 
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def catch_all(path):
+    return jsonify({"message": "Hello from Flask!"})
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run()
 
 # Add this for Vercel
 # app = app
