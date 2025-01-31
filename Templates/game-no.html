@@ -6,13 +6,20 @@
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <title>Memory Card Game</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
         body {
             margin: 0;
             padding: 20px;
             min-height: 100vh;
             font-family: 'Press Start 2P', cursive;
-            color: yellow;
-            background: linear-gradient(135deg, #2a0845 0%, #6441A5 100%);
+            color: purple;
+            background-color: #000; /* Fallback color */
+            background-image: url('https://kiara-adams.github.io/memory-match-images/Mid%20Week%20Distraction%20No_%2027%20%C2%B7%20Miss%20Moss.gif');
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            background-position: center;
+            background-size: cover;
         }
 
         .game-container {
@@ -39,6 +46,7 @@
             display: flex;
             gap: 20px;
             font-size: 1rem;
+            font-family: 'Press Start 2P', cursive;
         }
 
         .game-board {
@@ -95,12 +103,14 @@
         }
 
         .card-front {
-            background: #ff69b4;
+            background: #FBFF00;
             transform: rotateY(180deg);
         }
 
         .card-back {
-            background: linear-gradient(45deg, #ff69b4, #ff1493);
+            background: url('../static/images/courierdribblerbottom.gif');  /* Adjust the path based on your project structure */
+            background-size: cover;
+            background-position: center;
         }
 
         .win-screen {
@@ -141,7 +151,7 @@
             color: white;
             cursor: pointer;
             transition: background 0.3s ease;
-            font-family: inherit;
+            font-family: 'Press Start 2P', cursive;
         }
 
         button:hover {
