@@ -1,10 +1,24 @@
 # app.py
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, send_from_directory
 from flask_cors import CORS
+import os
 from database_handler import LeaderboardDB
 
-app = Flask(__name__, static_folder='static', template_folder='templates')
+# Print current directory for debugging
+print("Current working directory:", os.getcwd())
+
+app = Flask(__name__, 
+    static_folder='static',
+    template_folder='templates'
+) 
 CORS(app)
+
+# Print template folder location
+print("Template folder:", app.template_folder)
+if os.path.exists(app.template_folder):
+    print("Templates found:", os.listdir(app.template_folder))
+else:
+    print("Template folder not found!")
 
 # Initialize database only if needed
 try:
@@ -16,16 +30,23 @@ except Exception as e:
 @app.route('/')
 def home():
     try:
+        template_path = os.path.join(app.template_folder, 'index.html')
+        print(f"Trying to load template from: {template_path}")
+        print(f"Template exists: {os.path.exists(template_path)}")
         return render_template('index.html')
     except Exception as e:
-        print(f"Template error: {str(e)}")
+        print(f"Home route error: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
 @app.route('/games')
 def level():
     try:
+        template_path = os.path.join(app.template_folder, 'game-index.html')
+        print(f"Trying to load template from: {template_path}")
+        print(f"Template exists: {os.path.exists(template_path)}")
         return render_template('game-index.html')
     except Exception as e:
+        print(f"Games route error: {str(e)}")
         return jsonify({"error": f"Template error: {str(e)}"}), 500
 
 @app.route('/level')
@@ -33,6 +54,7 @@ def game_no():
     try:
         return render_template('game-no.html')
     except Exception as e:
+        print(f"Level route error: {str(e)}")
         return jsonify({"error": f"Template error: {str(e)}"}), 500
 
 @app.route('/card-match')
@@ -40,6 +62,7 @@ def card_match():
     try:
         return render_template('game-pic.html')
     except Exception as e:
+        print(f"Card match route error: {str(e)}")
         return jsonify({"error": f"Template error: {str(e)}"}), 500
 
 @app.route('/submit_picture_score', methods=['POST'])
