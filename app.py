@@ -23,25 +23,26 @@ def game_no():
 def card_match():
     return render_template('game-pic.html')
 
+@app.route('/submit_picture_score', methods=['POST'])
+def submit_picture_score():
+    try:
+        data = request.get_json()
+        username = data['username']
+        completion_time = data['completion_time']
+        moves = data['moves']
+        leaderboard_db.add_picture_game_score(username, completion_time, moves)
+        return jsonify({"status": "success"}), 200
+    except Exception as e:
+        print(f"Error in submit_picture_score: {e}")
+        return jsonify({"error": str(e)}), 500
+
 @app.route('/leaderboard')
 def leaderboard():
     top_players = leaderboard_db.get_top_players()
-    return render_template('leaderboard.html', top_players=top_players)
-
-@app.route('/submit_score', methods=['POST'])
-def submit_score():
-    try:
-        data = request.get_json()
-        print("Received data:", data)  # Add this debug line
-        username = data['username']
-        score = data['score'].split(',')
-        total_time = float(score[0])
-        total_moves = int(score[1])
-        leaderboard_db.add_score(username, total_time, total_moves)
-        return jsonify({"status": "success"}), 200
-    except Exception as e:
-        print(f"Error in submit_score: {e}")
-        return jsonify({"error": str(e)}), 500
+    picture_top_players = leaderboard_db.get_top_picture_players()
+    return render_template('leaderboard.html', 
+                         top_players=top_players,
+                         picture_top_players=picture_top_players)
 
 
 if __name__ == '__main__':

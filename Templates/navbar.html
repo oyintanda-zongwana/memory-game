@@ -13,12 +13,18 @@
 
         body {
             font-family: Arial, sans-serif;
+            padding-top: 70px; /* Add padding to prevent content from hiding behind navbar */
         }
 
         .navbar {
-            background-color: #333;
+            background: linear-gradient(135deg, #2a0845 0%, #6441A5 100%);
             padding: 1rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000; /* Ensures navbar stays on top */
+            border-bottom: 2px solid #FBFF00;
         }
 
         .nav-container {
@@ -30,10 +36,11 @@
         }
 
         .nav-brand {
-            color: white;
+            color: #FBFF00;
             text-decoration: none;
             font-size: 1.5rem;
             font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
 
         .nav-links {
@@ -46,15 +53,20 @@
             text-decoration: none;
             padding: 0.5rem 1rem;
             border-radius: 4px;
-            transition: background-color 0.3s ease;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
         }
 
         .nav-links a:hover {
-            background-color: #555;
+            background-color: rgba(251, 255, 0, 0.1);
+            border: 1px solid #FBFF00;
+            color: #FBFF00;
         }
 
         .nav-links a.active {
-            background-color: #4CAF50;
+            background-color: #FBFF00;
+            color: #2a0845;
+            font-weight: bold;
         }
 
         @media (max-width: 600px) {
@@ -67,6 +79,11 @@
                 flex-direction: column;
                 gap: 0.5rem;
                 text-align: center;
+                width: 100%;
+            }
+
+            body {
+                padding-top: 140px; /* Increase padding for mobile view */
             }
         }
     </style>
@@ -74,7 +91,7 @@
 <body>
     <nav class="navbar">
         <div class="nav-container">
-            <a href="/" class="nav-brand">Game Website</a>
+            <a href="/" class="nav-brand">My Brain Hurts</a>
             <div class="nav-links">
                 <a href="/" {% if request.endpoint == 'home' %}class="active"{% endif %}>Home</a>
                 <a href="/games" {% if request.endpoint == 'level' %}class="active"{% endif %}>Play Game</a>

@@ -1,0 +1,283 @@
+{% extends "navbar.html" %}
+
+{% block content %}
+<div class="game-container">
+    <div class="game-stats">
+        <span>Time: <span id="timer">0.0s</span></span>
+        <span>Moves: <span id="moves">0</span></span>
+    </div>
+    <div class="memory-board" id="memory-board"></div>
+    
+    <!-- Win Modal -->
+    <div id="winModal" class="modal">
+        <div class="modal-content">
+            <h2>Congratulations!</h2>
+            <p>You completed the game in <span id="finalTime">0</span> seconds with <span id="finalMoves">0</span> moves!</p>
+            <div class="input-group">
+                <input type="text" id="playerName" placeholder="Enter your name" maxlength="20">
+                <button onclick="submitScore()">Submit Score</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .game-container {
+        max-width: 1200px;
+        margin: 20px auto;
+        padding: 20px;
+    }
+
+    .game-stats {
+        display: flex;
+        justify-content: space-around;
+        margin-bottom: 20px;
+        font-size: 1.2em;
+        color: #FBFF00;
+    }
+
+    .memory-board {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 10px;
+        margin: 0 auto;
+    }
+
+    .card {
+        aspect-ratio: 1;
+        position: relative;
+        transform-style: preserve-3d;
+        transition: transform 0.6s;
+        cursor: pointer;
+    }
+
+    .card.flipped {
+        transform: rotateY(180deg);
+    }
+
+    .card-front, .card-back {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        backface-visibility: hidden;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .card-front {
+        background: linear-gradient(135deg, #2a0845 0%, #6441A5 100%);
+        border: 2px solid #FBFF00;
+    }
+
+    .card-back {
+        background: white;
+        transform: rotateY(180deg);
+    }
+
+    .card-back img {
+        width: 90%;
+        height: 90%;
+        object-fit: cover;
+    }
+
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.7);
+        z-index: 1001;
+    }
+
+    .modal-content {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: linear-gradient(135deg, #2a0845 0%, #6441A5 100%);
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+        color: #FBFF00;
+        border: 2px solid #FBFF00;
+    }
+
+    .input-group {
+        margin-top: 20px;
+    }
+
+    .input-group input {
+        padding: 10px;
+        margin-right: 10px;
+        border: 2px solid #FBFF00;
+        background: rgba(255,255,255,0.1);
+        color: #FBFF00;
+        border-radius: 5px;
+    }
+
+    .input-group button {
+        padding: 10px 20px;
+        background: #FBFF00;
+        color: #9B59B6;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    @media (max-width: 768px) {
+        .memory-board {
+            grid-template-columns: repeat(5, 1fr);
+        }
+    }
+
+    @media (max-width: 480px) {
+        .memory-board {
+            grid-template-columns: repeat(4, 1fr);
+        }
+    }
+</style>
+
+<script>
+const imageUrls = [
+    'https://kiara-adams.github.io/memory-match-images/1.jpg',
+    'https://kiara-adams.github.io/memory-match-images/2.jpg',
+    'https://kiara-adams.github.io/memory-match-images/3.jpg',
+    'https://kiara-adams.github.io/memory-match-images/4.jpg',
+    'https://kiara-adams.github.io/memory-match-images/5.jpg',
+    'https://kiara-adams.github.io/memory-match-images/6.jpg',
+    'https://kiara-adams.github.io/memory-match-images/7.jpg',
+    'https://kiara-adams.github.io/memory-match-images/8.jpg',
+    'https://kiara-adams.github.io/memory-match-images/9.jpg',
+    'https://kiara-adams.github.io/memory-match-images/10.jpg',
+    'https://kiara-adams.github.io/memory-match-images/11.jpg',
+    'https://kiara-adams.github.io/memory-match-images/12.jpg',
+    'https://kiara-adams.github.io/memory-match-images/13.jpg',
+    'https://kiara-adams.github.io/memory-match-images/14.jpg',
+    'https://kiara-adams.github.io/memory-match-images/15.jpg',
+];
+
+let cards = [];
+let flippedCards = [];
+let matchedPairs = 0;
+let moves = 0;
+let startTime = null;
+let timerInterval;
+
+function initializeGame() {
+    const gameBoard = document.getElementById('memory-board');
+    cards = [...imageUrls, ...imageUrls];
+    shuffleArray(cards);
+    
+    gameBoard.innerHTML = '';
+    cards.forEach((img, index) => {
+        const card = createCard(img, index);
+        gameBoard.appendChild(card);
+    });
+
+    startTime = Date.now();
+    timerInterval = setInterval(updateTimer, 100);
+}
+
+function createCard(imageUrl, index) {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+        <div class="card-front"></div>
+        <div class="card-back">
+            <img src="${imageUrl}" alt="card">
+        </div>
+    `;
+    card.dataset.index = index;
+    card.addEventListener('click', () => flipCard(card));
+    return card;
+}
+
+function flipCard(card) {
+    if (flippedCards.length === 2 || card.classList.contains('flipped') || 
+        card.classList.contains('matched')) return;
+
+    card.classList.add('flipped');
+    flippedCards.push(card);
+
+    if (flippedCards.length === 2) {
+        moves++;
+        document.getElementById('moves').textContent = moves;
+        checkMatch();
+    }
+}
+
+function checkMatch() {
+    const [card1, card2] = flippedCards;
+    const match = cards[card1.dataset.index] === cards[card2.dataset.index];
+
+    if (match) {
+        card1.classList.add('matched');
+        card2.classList.add('matched');
+        matchedPairs++;
+        if (matchedPairs === 15) {
+            gameWon();
+        }
+    } else {
+        setTimeout(() => {
+            card1.classList.remove('flipped');
+            card2.classList.remove('flipped');
+        }, 1000);
+    }
+    flippedCards = [];
+}
+
+function gameWon() {
+    clearInterval(timerInterval);
+    const finalTime = (Date.now() - startTime) / 1000;
+    document.getElementById('finalTime').textContent = finalTime.toFixed(1);
+    document.getElementById('finalMoves').textContent = moves;
+    document.getElementById('winModal').style.display = 'block';
+}
+
+function submitScore() {
+    const playerName = document.getElementById('playerName').value;
+    if (!playerName) {
+        alert('Please enter your name!');
+        return;
+    }
+
+    const finalTime = (Date.now() - startTime) / 1000;
+    fetch('/submit_picture_score', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            username: playerName,
+            completion_time: finalTime,
+            moves: moves
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            window.location.href = '/leaderboard';
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+}
+
+function updateTimer() {
+    const elapsed = (Date.now() - startTime) / 1000;
+    document.getElementById('timer').textContent = elapsed.toFixed(1) + 's';
+}
+
+initializeGame();
+</script>
+{% endblock %}

@@ -39,6 +39,15 @@
             letter-spacing: 1.5px;
         }
         
+        .leaderboard-section {
+            margin-bottom: 40px;
+        }
+        
+        .leaderboard-section h1 {
+            color: #FBFF00;
+            margin-bottom: 20px;
+        }
+
         .leaderboard-table {
             width: 100%;
             border-collapse: collapse;
@@ -85,31 +94,61 @@
     {% extends "navbar.html" %}
 
     {% block content %}
+
     <div class="leaderboard">
-        <h1>Top Players</h1>
-        <table class="leaderboard-table">
-            <thead>
-                <tr>
-                    <th>Rank</th>
-                    <th>Username</th>
-                    <th>Time</th>
-                    <th>Moves</th>
-                    <th>Date</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for username, total_time, total_moves, timestamp in top_players %}
-                <tr>
-                    <td>{{ loop.index }}</td>
-                    <td>{{ username }}</td>
-                    <td>{{ total_time }}s</td>
-                    <td>{{ total_moves }}</td>
-                    <td>{{ timestamp }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-         </table>
+        <div class="leaderboard-section">
+            <h1>Number Memory Game - Top Players</h1>
+            <table class="leaderboard-table">
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Username</th>
+                        <th>Time</th>
+                        <th>Moves</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for username, total_time, total_moves, timestamp in top_players %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ username }}</td>
+                        <td>{{ total_time }}s</td>
+                        <td>{{ total_moves }}</td>
+                        <td>{{ timestamp }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="leaderboard-section">
+            <h1>Picture Memory Game - Top Players</h1>
+            <table class="leaderboard-table">
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Username</th>
+                        <th>Time</th>
+                        <th>Moves</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for username, completion_time, moves, timestamp in picture_top_players %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ username }}</td>
+                        <td>{{ completion_time }}s</td>
+                        <td>{{ moves }}</td>
+                        <td>{{ timestamp }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
+
     {% endblock %}
 </body>
 </html>
