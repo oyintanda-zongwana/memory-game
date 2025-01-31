@@ -9,7 +9,7 @@ print("Current working directory:", os.getcwd())
 
 app = Flask(__name__, 
     static_folder='static',
-    template_folder='templates'  # Changed to lowercase to match your directory
+    template_folder='templates'  # Match your actual folder name case
 ) 
 CORS(app)
 
@@ -27,66 +27,54 @@ except Exception as e:
     print(f"Database initialization error: {e}")
     leaderboard_db = None
 
+# Get the absolute path to the templates directory
+TEMPLATE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), 'templates'))
+
 @app.route('/', methods=['GET'])
 def home():
     try:
-        # Add debug prints
-        print("Attempting to render index.html")
-        template_path = os.path.join(os.getcwd(), 'templates', 'index.html')  # Changed to lowercase
-        print("Full template path:", template_path)
-        
-        # Try to read the file directly
-        try:
-            with open(template_path, 'r', encoding='utf-8') as f:
-                template_content = f.read()
-                print("Successfully read template file, length:", len(template_content))
-        except Exception as file_error:
-            print("Error reading template file:", str(file_error))
-        
-        return render_template('index.html')
+        # Try to read the template file directly
+        template_path = os.path.join(TEMPLATE_DIR, 'index.html')
+        with open(template_path, 'r', encoding='utf-8') as f:
+            return f.read(), 200, {'Content-Type': 'text/html'}
     except Exception as e:
-        print(f"Error in route: {str(e)}")
-        # Try to read template directory contents
-        template_dir = os.path.join(os.getcwd(), 'templates')  # Changed to lowercase
-        dir_contents = os.listdir(template_dir) if os.path.exists(template_dir) else []
-        
         return jsonify({
             "error": str(e),
             "details": {
                 "cwd": os.getcwd(),
-                "template_path": template_path,
-                "template_dir_exists": os.path.exists(template_dir),
-                "template_file_exists": os.path.exists(template_path),
-                "dir_contents": dir_contents
+                "template_dir": TEMPLATE_DIR,
+                "template_exists": os.path.exists(TEMPLATE_DIR),
+                "files": os.listdir(os.getcwd()) if os.path.exists(os.getcwd()) else [],
+                "template_files": os.listdir(TEMPLATE_DIR) if os.path.exists(TEMPLATE_DIR) else []
             }
         }), 500
 
 @app.route('/games')
 def level():
     try:
-        template_path = os.path.join(app.template_folder, 'game-index.html')
-        print(f"Trying to load template from: {template_path}")
-        print(f"Template exists: {os.path.exists(template_path)}")
-        return render_template('game-index.html')
+        template_path = os.path.join(TEMPLATE_DIR, 'game-index.html')
+        with open(template_path, 'r', encoding='utf-8') as f:
+            return f.read(), 200, {'Content-Type': 'text/html'}
     except Exception as e:
-        print(f"Games route error: {str(e)}")
-        return jsonify({"error": f"Template error: {str(e)}"}), 500
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/level')
 def game_no():
     try:
-        return render_template('game-no.html')
+        template_path = os.path.join(TEMPLATE_DIR, 'game-no.html')
+        with open(template_path, 'r', encoding='utf-8') as f:
+            return f.read(), 200, {'Content-Type': 'text/html'}
     except Exception as e:
-        print(f"Level route error: {str(e)}")
-        return jsonify({"error": f"Template error: {str(e)}"}), 500
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/card-match')
 def card_match():
     try:
-        return render_template('game-pic.html')
+        template_path = os.path.join(TEMPLATE_DIR, 'game-pic.html')
+        with open(template_path, 'r', encoding='utf-8') as f:
+            return f.read(), 200, {'Content-Type': 'text/html'}
     except Exception as e:
-        print(f"Card match route error: {str(e)}")
-        return jsonify({"error": f"Template error: {str(e)}"}), 500
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/submit_picture_score', methods=['POST'])
 def submit_picture_score():
@@ -116,10 +104,9 @@ def leaderboard():
     except Exception as e:
         return jsonify({"error": f"Leaderboard error: {str(e)}"}), 500
 
-@app.route('/', defaults={'path': ''})
-@app.route('/<path:path>')
-def catch_all(path):
-    return jsonify({"message": "Hello from Flask!"})
+@app.route('/static/<path:path>')
+def serve_static(path):
+    return send_from_directory('static', path)
 
 # Add this for Vercel serverless
 app.debug = True
