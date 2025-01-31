@@ -16,8 +16,9 @@ except Exception as e:
 @app.route('/')
 def home():
     try:
-        return jsonify({"message": "Hello from Flask!"})
+        return render_template('index.html')
     except Exception as e:
+        print(f"Template error: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
 @app.route('/games')
