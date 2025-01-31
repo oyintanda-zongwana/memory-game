@@ -9,7 +9,7 @@ print("Current working directory:", os.getcwd())
 
 app = Flask(__name__, 
     static_folder='static',
-    template_folder='templates'
+    template_folder='templates'  # Match your actual folder name case
 ) 
 CORS(app)
 
@@ -27,16 +27,32 @@ except Exception as e:
     print(f"Database initialization error: {e}")
     leaderboard_db = None
 
-@app.route('/')
+@app.route('/', methods=['GET'])
 def home():
     try:
-        template_path = os.path.join(app.template_folder, 'index.html')
-        print(f"Trying to load template from: {template_path}")
-        print(f"Template exists: {os.path.exists(template_path)}")
+        # Add debug prints
+        print("Attempting to render index.html")
+        print("Template folder exists:", os.path.exists('Templates'))
+        print("Template path:", os.path.join('Templates', 'index.html'))
+        print("File exists:", os.path.exists(os.path.join('Templates', 'index.html')))
+        
+        # Try to read the template file directly
+        with open(os.path.join('Templates', 'index.html'), 'r') as f:
+            content = f.read()
+            print("Template content length:", len(content))
+        
         return render_template('index.html')
     except Exception as e:
-        print(f"Home route error: {str(e)}")
-        return jsonify({"error": str(e)}), 500
+        print(f"Error details: {str(e)}")
+        return jsonify({
+            "error": str(e),
+            "details": {
+                "cwd": os.getcwd(),
+                "template_folder": app.template_folder,
+                "files_in_cwd": os.listdir(),
+                "template_exists": os.path.exists('Templates')
+            }
+        }), 500
 
 @app.route('/games')
 def level():
@@ -103,6 +119,6 @@ app.debug = True
 
 # This is important for Vercel
 if __name__ == '__main__':
-    app.run()
+    app.run(host='0.0.0.0', port=8080)
 # Add this for Vercel
 # app = app
