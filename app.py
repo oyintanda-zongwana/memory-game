@@ -10,7 +10,7 @@ print("Current working directory:", os.getcwd())
 app = Flask(__name__, 
     static_folder='static',
     template_folder='templates'  # Changed to lowercase to match your directory
-) 
+)   
 CORS(app)
 
 # Print template folder location
