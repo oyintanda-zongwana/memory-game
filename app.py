@@ -9,8 +9,8 @@ print("Current working directory:", os.getcwd())
 
 app = Flask(__name__, 
     static_folder='static',
-    template_folder='templates'  # Changed to lowercase to match your directory
-)   
+    template_folder='templates'  # Match your actual folder name case
+) 
 CORS(app)
 
 # Print template folder location
@@ -30,36 +30,35 @@ except Exception as e:
 @app.route('/', methods=['GET'])
 def home():
     try:
-        # Add debug prints
+        # Print debug information to trace path and check file
         print("Attempting to render index.html")
-        template_path = os.path.join(os.getcwd(), 'templates', 'index.html')  # Changed to lowercase
-        print("Full template path:", template_path)
+        template_dir = os.path.join(os.getcwd(), 'templates')  # Make sure 'templates' is in the right place
+        template_path = os.path.join(template_dir, 'index.html')
+
+        print(f"Template directory: {template_dir}")
+        print(f"Template path: {template_path}")
         
-        # Try to read the file directly
-        try:
-            with open(template_path, 'r', encoding='utf-8') as f:
-                template_content = f.read()
-                print("Successfully read template file, length:", len(template_content))
-        except Exception as file_error:
-            print("Error reading template file:", str(file_error))
+        # Ensure the template exists
+        if not os.path.exists(template_path):
+            raise FileNotFoundError(f"Template 'index.html' not found at {template_path}")
         
+        # Use Flask's render_template to serve the template
         return render_template('index.html')
+    
     except Exception as e:
         print(f"Error in route: {str(e)}")
-        # Try to read template directory contents
-        template_dir = os.path.join(os.getcwd(), 'templates')  # Changed to lowercase
+        # Provide details of the issue in the JSON response
         dir_contents = os.listdir(template_dir) if os.path.exists(template_dir) else []
         
         return jsonify({
             "error": str(e),
             "details": {
                 "cwd": os.getcwd(),
-                "template_path": template_path,
                 "template_dir_exists": os.path.exists(template_dir),
                 "template_file_exists": os.path.exists(template_path),
                 "dir_contents": dir_contents
             }
-        }), 500
+        }), 500  
 
 @app.route('/games')
 def level():
@@ -115,6 +114,20 @@ def leaderboard():
                              picture_top_players=picture_top_players)
     except Exception as e:
         return jsonify({"error": f"Leaderboard error: {str(e)}"}), 500
+
+@app.route('/debug')
+def debug():
+    template_dir = os.path.join(os.getcwd(), 'templates')
+    if os.path.exists(template_dir):
+        files = os.listdir(template_dir)
+        return jsonify({
+            "template_dir_exists": True,
+            "files_in_template_dir": files
+        })
+    else:
+        return jsonify({
+            "template_dir_exists": False
+        })  
 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
