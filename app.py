@@ -87,6 +87,21 @@ def card_match():
         print(f"Card match route error: {str(e)}")
         return jsonify({"error": f"Template error: {str(e)}"}), 500
 
+@app.route('/submit_number_score', methods=['POST'])
+def submit_number_score():
+    try:
+        if not leaderboard_db:
+            return jsonify({"error": "Database not initialized"}), 500
+        data = request.get_json()
+        username = data['username']
+        completion_time = data['completion_time']
+        moves = data['moves']
+        leaderboard_db.add_number_game_score(username, completion_time, moves)
+        return jsonify({"status": "success"}), 200
+    except Exception as e:
+        print(f"Error in submit_number_score: {e}")
+        return jsonify({"error": str(e)}), 500
+
 @app.route('/submit_picture_score', methods=['POST'])
 def submit_picture_score():
     try:
